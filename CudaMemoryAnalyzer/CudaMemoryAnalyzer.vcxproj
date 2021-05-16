@@ -57,7 +57,10 @@
     <ClInclude Include="src\StaticAnalyzer.h" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="src\CudaUtils.cu" />
+    <CudaCompile Include="src\CudaUtils.cu">
+      <Warning Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">W3</Warning>
+      <Warning Condition="'$(Configuration)|$(Platform)'=='Release|x64'">W3</Warning>
+    </CudaCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
