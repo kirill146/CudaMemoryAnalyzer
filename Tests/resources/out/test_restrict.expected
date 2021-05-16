@@ -1,0 +1,1 @@
+[Error at test_restrict.cu:4:2] __restrict__ semantics violation: write to pa[0] aliases with access to a[0] at test_restrict.cu:5:2

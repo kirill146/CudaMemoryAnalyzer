@@ -1,0 +1,7 @@
+/x64/
+/.vs/
+/CudaMemoryAnalyzer/x64/
+/Tests/x64/
+*.vcxproj.user
+*.out
+/Tests/kernel.cu

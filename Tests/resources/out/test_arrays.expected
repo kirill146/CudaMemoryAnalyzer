@@ -1,0 +1,9 @@
+[Error at test_arrays.cu:5:7] Array with size 5 accessed at index 5
+[Error at test_arrays.cu:6:9] Array with size 5 accessed at index 5
+[Error at test_arrays.cu:7:7] Array with size 5 accessed at index 97
+[Error at test_arrays.cu:8:14] Array with size 5 accessed at index 5
+[Error at test_arrays.cu:8:21] Array with size 5 accessed at index 6
+[Error at test_arrays.cu:10:7] Array with size 5 accessed at index (- 1)
+[Error at test_arrays.cu:12:7] Array with size 5 accessed at index (- 1)
+[Error at test_arrays.cu:19:7] Array with size 5 accessed at index 5
+[Error at test_arrays.cu:20:10] Array with size 6 accessed at index 6

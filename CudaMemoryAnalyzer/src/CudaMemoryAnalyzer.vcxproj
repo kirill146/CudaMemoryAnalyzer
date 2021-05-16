@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{fe5207bf-8684-4857-b4c3-da013ce319be}</ProjectGuid>
+    <RootNamespace>CudaMemoryAnalyzer</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.1.props" />
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(CUDA_PATH)\include;$(LLVM_PROJ_DIR)\build\tools\clang\include;$(LLVM_PROJ_DIR)\clang\include;$(LLVM_PROJ_DIR)\llvm\include;$(LLVM_PROJ_DIR)\build\include;$(LLVM_PROJ_DIR)\clang\lib\Driver;$(SolutionDIr)include</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(LLVM_PROJ_DIR)\build\Debug\lib;$(SolutionDir)lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libz3.lib;Version.lib;LLVMRemarks.lib;LLVMDemangle.lib;LLVMMCParser.lib;LLVMBinaryFormat.lib;LLVMCore.lib;LLVMProfileData.lib;clangDriver.lib;LLVMFrontendOpenMP.lib;LLVMMC.lib;clangAnalysis.lib;clangEdit.lib;LLVMBitstreamReader.lib;LLVMOption.lib;clangSema.lib;clangLex.lib;LLVMSupport.lib;clangParse.lib;clangSerialization.lib;clangBasic.lib;clangFrontend.lib;clangAST.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>cuda.lib;LLVMRemarks.lib;LLVMDemangle.lib;LLVMMCParser.lib;LLVMBinaryFormat.lib;LLVMCore.lib;LLVMProfileData.lib;clangDriver.lib;LLVMFrontendOpenMP.lib;LLVMMC.lib;clangAnalysis.lib;clangEdit.lib;LLVMBitstreamReader.lib;LLVMOption.lib;clangSema.lib;clangLex.lib;LLVMSupport.lib;clangParse.lib;clangSerialization.lib;clangBasic.lib;clangFrontend.lib;clangAST.lib;</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\x64;$(LLVM_PROJ_DIR)\build\Debug\lib</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(CUDA_PATH)\include;$(LLVM_PROJ_DIR)\build\tools\clang\include;$(LLVM_PROJ_DIR)\clang\include;$(LLVM_PROJ_DIR)\llvm\include;$(LLVM_PROJ_DIR)\build\include;$(LLVM_PROJ_DIR)\clang\lib\Driver;$(SolutionDIr)include</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(LLVM_PROJ_DIR)\build\Release\lib;$(SolutionDir)lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libz3.lib;Version.lib;LLVMRemarks.lib;LLVMDemangle.lib;LLVMMCParser.lib;LLVMBinaryFormat.lib;LLVMCore.lib;LLVMProfileData.lib;clangDriver.lib;LLVMFrontendOpenMP.lib;LLVMMC.lib;clangAnalysis.lib;clangEdit.lib;LLVMBitstreamReader.lib;LLVMOption.lib;clangSema.lib;clangLex.lib;LLVMSupport.lib;clangParse.lib;clangSerialization.lib;clangBasic.lib;clangFrontend.lib;clangAST.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>cuda.lib;LLVMRemarks.lib;LLVMDemangle.lib;LLVMMCParser.lib;LLVMBinaryFormat.lib;LLVMCore.lib;LLVMProfileData.lib;clangDriver.lib;LLVMFrontendOpenMP.lib;LLVMMC.lib;clangAnalysis.lib;clangEdit.lib;LLVMBitstreamReader.lib;LLVMOption.lib;clangSema.lib;clangLex.lib;LLVMSupport.lib;clangParse.lib;clangSerialization.lib;clangBasic.lib;clangFrontend.lib;clangAST.lib;</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\x64;$(LLVM_PROJ_DIR)\build\Release\lib</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AbstractRule.cpp" />
+    <ClCompile Include="AnalyzerException.cpp" />
+    <ClCompile Include="ArrayOwerflowRule.cpp" />
+    <ClCompile Include="ASTVisitor.cpp" />
+    <ClCompile Include="ASTWalker.cpp" />
+    <ClCompile Include="CudaMemoryAnalyzer.cpp" />
+    <ClCompile Include="DirectorySearch.cpp" />
+    <ClCompile Include="Expression.cpp" />
+    <ClCompile Include="Function.cpp" />
+    <ClCompile Include="Operator.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="RestrictViolationRule.cpp" />
+    <ClCompile Include="RuleContext.cpp" />
+    <ClCompile Include="Solver.cpp" />
+    <ClCompile Include="State.cpp" />
+    <ClCompile Include="Statement.cpp" />
+    <ClCompile Include="StaticAnalyzer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AbstractRule.h" />
+    <ClInclude Include="AnalyzerContext.h" />
+    <ClInclude Include="AnalyzerException.h" />
+    <ClInclude Include="ArrayOwerflowRule.h" />
+    <ClInclude Include="ASTVisitor.h" />
+    <ClInclude Include="ASTWalker.h" />
+    <ClInclude Include="CudaMemoryAnalyzer.h" />
+    <ClInclude Include="CudaUtils.h" />
+    <ClInclude Include="DirectorySearch.h" />
+    <ClInclude Include="Expression.h" />
+    <ClInclude Include="ExpressionType.h" />
+    <ClInclude Include="Function.h" />
+    <ClInclude Include="KernelContext.h" />
+    <ClInclude Include="MemoryAccess.h" />
+    <ClInclude Include="Operator.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="RestrictViolationRule.h" />
+    <ClInclude Include="RuleContext.h" />
+    <ClInclude Include="Solver.h" />
+    <ClInclude Include="State.h" />
+    <ClInclude Include="Statement.h" />
+    <ClInclude Include="StaticAnalyzer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="CudaUtils.cu">
+      <Warning Condition="'$(Configuration)|$(Platform)'=='Release|x64'">W3</Warning>
+      <Warning Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">W3</Warning>
+    </CudaCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.1.targets" />
+  </ImportGroup>
+</Project>

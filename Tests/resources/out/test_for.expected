@@ -1,0 +1,4 @@
+[Error at test_loops.cu:66:5] Array with size 5 accessed at index 5
+[Error at test_loops.cu:70:6] Array with size 5 accessed at index 5
+[Error at test_loops.cu:74:7] Array with size 5 accessed at index 5
+[Error at test_loops.cu:76:4] Array with size 5 accessed at index 5

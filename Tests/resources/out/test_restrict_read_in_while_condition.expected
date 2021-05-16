@@ -1,0 +1,1 @@
+[Error at test_restrict.cu:97:2] __restrict__ semantics violation: write to a[3] aliases with access to b[3] at test_restrict.cu:98:9

@@ -1,0 +1,20 @@
+[Error at test_builtin_variables.cu:14:5] Array with size 2 accessed at index 2
+[Error at test_builtin_variables.cu:16:5] Array with size 3 accessed at index 3
+[Error at test_builtin_variables.cu:18:5] Array with size 4 accessed at index 4
+[Error at test_builtin_variables.cu:21:5] Array with size 5 accessed at index 5
+[Error at test_builtin_variables.cu:23:5] Array with size 6 accessed at index 6
+[Error at test_builtin_variables.cu:25:5] Array with size 7 accessed at index 7
+[Error at test_builtin_variables.cu:28:5] Array with size 1 accessed at index 1
+[Error at test_builtin_variables.cu:30:5] Array with size 2 accessed at index 2
+[Error at test_builtin_variables.cu:32:5] Array with size 3 accessed at index 3
+[Error at test_builtin_variables.cu:35:5] Array with size 4 accessed at index 4
+[Error at test_builtin_variables.cu:37:5] Array with size 5 accessed at index 5
+[Error at test_builtin_variables.cu:39:5] Array with size 6 accessed at index 6
+[Error at test_builtin_variables.cu:43:16] Array with size 7 accessed at index (- 1)
+[Error at test_builtin_variables.cu:44:17] Array with size 7 accessed at index (- 1)
+[Error at test_builtin_variables.cu:48:16] Array with size 7 accessed at index (- 1)
+[Error at test_builtin_variables.cu:49:17] Array with size 7 accessed at index (- 1)
+[Error at test_builtin_variables.cu:53:16] Array with size 7 accessed at index (- 1)
+[Error at test_builtin_variables.cu:54:17] Array with size 7 accessed at index (- 1)
+[Error at test_builtin_variables.cu:59:7] Array with size 10 accessed at index 10
+[Error at test_builtin_variables.cu:62:42] Array with size 18 accessed at index 18

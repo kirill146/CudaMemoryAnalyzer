@@ -1,0 +1,2 @@
+[Error at test_input_args.cu:3:13] Array with size 2 accessed at index 2
+[Error at test_input_args.cu:5:15] Array with size 2 accessed at index 2

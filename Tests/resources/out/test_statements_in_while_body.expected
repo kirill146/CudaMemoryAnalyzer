@@ -1,0 +1,2 @@
+[Error at test_loops.cu:48:5] Array with size 5 accessed at index 5
+[Error at test_loops.cu:55:4] Array with size 100 accessed at index 100

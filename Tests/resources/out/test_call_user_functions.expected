@@ -1,0 +1,4 @@
+[Error at test_call_functions.cu:4:4] Array with size 5 accessed at index 50
+[Error at test_call_functions.cu:9:4] Array with size 5 accessed at index 5
+[Error at test_call_functions.cu:13:4] Array with size 5 accessed at index 5
+[Error at test_call_functions.cu:19:4] Array with size 5 accessed at index 5

@@ -1,0 +1,6 @@
+[Error at test_if.cu:9:7] Array with size 5 accessed at index 5
+[Error at test_if.cu:14:4] Array with size 5 accessed at index 5
+[Error at test_if.cu:23:5] Array with size 5 accessed at index 5
+[Error at test_if.cu:27:4] Array with size 5 accessed at index (- 1)
+[Error at test_if.cu:31:7] Array with size 5 accessed at index 5
+[Error at test_if.cu:32:5] Array with size 5 accessed at index (- 1)
