@@ -101,11 +101,8 @@ ASTWalker::ASTWalker(AnalyzerContext* analyzerContext, std::vector<std::string> 
 		languageOptions,
 		clang::InputKind(clang::Language::CUDA, clang::InputKind::Source, false),
 		llvm::Triple(pTargetInfo->getTriple()),
-#if LLVM_VERSION_MAJOR >= 13
 		compInst.getPreprocessorOpts().Includes,
-#else
-		compInst.getPreprocessorOpts(),
-#endif
+		//compInst.getPreprocessorOpts(),
 		clang::LangStandard::lang_cxx14);
 
 	languageOptions.CUDAAllowVariadicFunctions = 1;

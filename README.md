@@ -9,6 +9,7 @@
 # cd ...
 git clone https://github.com/llvm/llvm-project.git
 cd llvm-project
+git checkout llvmorg-12.0.0
 # Конфигурируем:
 # Для ускорения сборки и уменьшения размера билда
 # можно оставить только необходимые таргеты при помощи
