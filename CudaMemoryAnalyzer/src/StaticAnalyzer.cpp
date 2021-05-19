@@ -13,9 +13,10 @@ void StaticAnalyzer::Analyze(
 	std::filesystem::path const& filePath,
 	std::vector<std::string> const& additionalIncludeDirs,
 	std::ostream& os,
-	bool checkOverflows)
+	bool checkOverflows,
+	char const* llvmIncludePath)
 {
-	ASTWalker walker(&analyzerContext, additionalIncludeDirs);
+	ASTWalker walker(&analyzerContext, additionalIncludeDirs, llvmIncludePath);
 	walker.walk(filePath); 
 
 	std::unique_ptr<AbstractRule> rule;

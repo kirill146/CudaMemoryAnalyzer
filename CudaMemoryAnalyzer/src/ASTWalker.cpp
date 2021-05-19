@@ -16,7 +16,7 @@ std::filesystem::path PathByEnvVar(std::string const& varName) {
 	return var.data();
 }
 
-std::vector<std::string> ASTWalker::findIncludes() const {
+std::vector<std::string> ASTWalker::findIncludes(char const* llvmIncludePath) const {
 	//MSVCToolChain::ToolsetLayout VSLayout = MSVCToolChain::ToolsetLayout::OlderVS;
 	std::string VCToolChainPath;
 	bool msvcFound = findVCToolChain(VCToolChainPath/*, VSLayout*/);
@@ -47,10 +47,15 @@ std::vector<std::string> ASTWalker::findIncludes() const {
 		throw AnalyzerException("Nvidia Toolkit include path not found");
 	}
 	
-	std::filesystem::path llvmInclude = PathByEnvVar("LLVM_PROJ_DIR");
-	llvmInclude /= "clang\\lib\\Headers";
-	//std::cout << "llvmInclude: " << llvmInclude.string() << std::endl;
-	if (!std::filesystem::exists(nvGpuToolkitInclude)) {
+	std::filesystem::path llvmInclude;
+	if (strcmp(llvmIncludePath, "") != 0) {
+		llvmInclude = llvmIncludePath;
+	} else {
+		llvmInclude = PathByEnvVar("LLVM_PROJ_DIR");
+		llvmInclude /= "clang\\lib\\Headers";
+	}
+	std::cout << "LLVM include path: " << llvmInclude.string() << std::endl;
+	if (!std::filesystem::exists(llvmInclude)) {
 		throw AnalyzerException("LLVM include path not found");
 	}
 
@@ -62,7 +67,11 @@ std::vector<std::string> ASTWalker::findIncludes() const {
 	};
 }
 
-ASTWalker::ASTWalker(AnalyzerContext* analyzerContext, std::vector<std::string> additionalIncludeDirs)
+ASTWalker::ASTWalker(
+	AnalyzerContext* analyzerContext,
+	std::vector<std::string> additionalIncludeDirs,
+	char const* llvmIncludePath
+)
 	: compInst()
 {
 	auto *pTextDiagnosticPrinter = new clang::TextDiagnosticPrinter(llvm::errs(), &compInst.getDiagnosticOpts());
@@ -144,7 +153,7 @@ ASTWalker::ASTWalker(AnalyzerContext* analyzerContext, std::vector<std::string> 
 	std::cout << "MicrosoftExt: " << languageOptions.MicrosoftExt << std::endl;
 	std::cout << "MSVCCompat: " << languageOptions.MSVCCompat << std::endl;	
 	*/
-	std::vector<std::string> systemIncludes = findIncludes();
+	std::vector<std::string> systemIncludes = findIncludes(llvmIncludePath);
 	additionalIncludeDirs.insert(additionalIncludeDirs.end(), systemIncludes.begin(), systemIncludes.end());
 	for (auto const& includeDir : additionalIncludeDirs) {
 		hso.AddPath(includeDir, clang::frontend::IncludeDirGroup::Angled, false, false);

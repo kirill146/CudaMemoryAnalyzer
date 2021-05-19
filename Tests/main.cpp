@@ -18,6 +18,8 @@
 #define KERNELS RESOURCES "kernels" PATH_SEPARATOR
 #define OUT RESOURCES "out" PATH_SEPARATOR
 
+char const* llvmIncludePath = "";
+
 std::vector<std::string> readLines(std::string const& fileName) {
 	std::ifstream fin(fileName);
 	std::vector<std::string> res;
@@ -37,9 +39,9 @@ void test_output(std::filesystem::path const& fileName, std::string const& kerne
 	std::cout << "File name: " << fileName << std::endl;
 	std::cout << "Kernel name: " << kernelName << std::endl;
 	if (checkOverflows) {
-		checkBufferOverflows(fileName.string(), kernelName, {}, args, outputFile, gridDim, blockDim);
+		checkBufferOverflows(fileName.string(), kernelName, {}, args, outputFile, gridDim, blockDim, llvmIncludePath);
 	} else {
-		checkRestrictViolations(fileName.string(), kernelName, {}, args, outputFile, gridDim, blockDim);
+		checkRestrictViolations(fileName.string(), kernelName, {}, args, outputFile, gridDim, blockDim, llvmIncludePath);
 	}
 	std::vector<std::string> actual = readLines(outputFile);
 	std::vector<std::string> expected = readLines(expectedFile);
@@ -203,7 +205,10 @@ void run_tests() {
 	test_loops();
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+	if (argc >= 2) {
+		llvmIncludePath = argv[1];
+	}
 	try {
 		run_tests();
 	} catch (AnalyzerException& e) {

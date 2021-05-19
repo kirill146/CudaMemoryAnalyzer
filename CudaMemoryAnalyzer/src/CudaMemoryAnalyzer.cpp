@@ -9,15 +9,16 @@ void checkBufferOverflows(std::string const& filePath,
 	std::vector<void const*> const& args,
 	std::string const& outputFile,
 	dim3 const& gridDim,
-	dim3 const& blockDim)
+	dim3 const& blockDim,
+	char const* llvmIncludePath)
 {
 	KernelContext kernelContext{ kernelName, {}, args, gridDim, blockDim };
 	StaticAnalyzer staticAnalyzer(kernelContext);
 	if (outputFile.empty()) {
-		staticAnalyzer.Analyze(filePath, additionalIncludeDirs, std::cout);
+		staticAnalyzer.Analyze(filePath, additionalIncludeDirs, std::cout, true, llvmIncludePath);
 	} else {
 		std::ofstream os(outputFile);
-		staticAnalyzer.Analyze(filePath, additionalIncludeDirs, os);
+		staticAnalyzer.Analyze(filePath, additionalIncludeDirs, os, true, llvmIncludePath);
 	}
 }
 
@@ -27,14 +28,15 @@ void checkRestrictViolations(std::string const& filePath,
 	std::vector<void const*> const& args,
 	std::string const& outputFile,
 	dim3 const& gridDim,
-	dim3 const& blockDim)
+	dim3 const& blockDim,
+	char const* llvmIncludePath)
 {
 	KernelContext kernelContext{ kernelName, {}, args, gridDim, blockDim };
 	StaticAnalyzer staticAnalyzer(kernelContext);
 	if (outputFile.empty()) {
-		staticAnalyzer.Analyze(filePath, additionalIncludeDirs, std::cout, false);
+		staticAnalyzer.Analyze(filePath, additionalIncludeDirs, std::cout, false, llvmIncludePath);
 	} else {
 		std::ofstream os(outputFile);
-		staticAnalyzer.Analyze(filePath, additionalIncludeDirs, os, false);
+		staticAnalyzer.Analyze(filePath, additionalIncludeDirs, os, false, llvmIncludePath);
 	}
 }
