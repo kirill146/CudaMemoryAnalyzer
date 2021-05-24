@@ -265,7 +265,7 @@ std::unique_ptr<Expression> ASTVisitor::ProcessExpr(clang::Expr const* expr) {
 		return ProcessExpr(clang::cast<clang::OpaqueValueExpr>(expr)->getSourceExpr());
 	}
 	Log(std::cout << expr->getStmtClassName() << std::endl);
-	throw AnalyzerException("Unknown expression");
+	throw AnalyzerException("Unknown expression " + std::string(expr->getStmtClassName()));
 }
 
 std::string getArrayName(clang::Expr const* expr) {
@@ -421,6 +421,9 @@ std::unique_ptr<Statement> ASTVisitor::ProcessReturnStmt(clang::ReturnStmt* retu
 }
 
 std::unique_ptr<Statement> ASTVisitor::ProcessStmt(clang::Stmt* stmt) {
+	if (clang::isa<clang::NullStmt>(stmt)) {
+		return nullptr;
+	}
 	if (clang::isa<clang::IfStmt>(stmt)) {
 		return ProcessIfStmt(clang::cast<clang::IfStmt>(stmt));
 	}
@@ -446,7 +449,7 @@ std::unique_ptr<Statement> ASTVisitor::ProcessStmt(clang::Stmt* stmt) {
 	if (clang::isa<clang::Expr>(stmt)) {
 		return ProcessExpr(clang::cast<clang::Expr>(stmt));
 	}
-	throw AnalyzerException("Unknown statement");
+	throw AnalyzerException("Unknown statement " + std::string(stmt->getStmtClassName()));
 }
 
 std::unique_ptr<Statement> ASTVisitor::ProcessDeclStmt(clang::DeclStmt* declStmt) {
