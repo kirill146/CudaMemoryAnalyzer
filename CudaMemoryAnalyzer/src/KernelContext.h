@@ -9,4 +9,5 @@ struct KernelContext {
 	std::vector<void const*> const scalarArgValues;
 	dim3 gridDim;
 	dim3 blockDim;
+	size_t dynamicSharedMemSize;
 };

@@ -5,3 +5,5 @@
 *.vcxproj.user
 *.out
 /Tests/kernel.cu
+/Tests/ast_dump.cpp
+/Tests/preprocessed_kernel.cpp

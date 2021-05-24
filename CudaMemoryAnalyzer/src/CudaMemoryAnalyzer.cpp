@@ -8,11 +8,10 @@ void checkBufferOverflows(std::string const& filePath,
 	std::vector<std::string> const& additionalIncludeDirs,
 	std::vector<void const*> const& args,
 	std::string const& outputFile,
-	dim3 const& gridDim,
-	dim3 const& blockDim,
+	ExecutionConfig const& executionConfig,
 	char const* llvmIncludePath)
 {
-	KernelContext kernelContext{ kernelName, {}, args, gridDim, blockDim };
+	KernelContext kernelContext{ kernelName, {}, args, executionConfig.gridDim, executionConfig.blockDim, executionConfig.dynamicMemorySize };
 	StaticAnalyzer staticAnalyzer(kernelContext);
 	if (outputFile.empty()) {
 		staticAnalyzer.Analyze(filePath, additionalIncludeDirs, std::cout, true, llvmIncludePath);
@@ -27,11 +26,10 @@ void checkRestrictViolations(std::string const& filePath,
 	std::vector<std::string> const& additionalIncludeDirs,
 	std::vector<void const*> const& args,
 	std::string const& outputFile,
-	dim3 const& gridDim,
-	dim3 const& blockDim,
+	ExecutionConfig const& executionConfig,
 	char const* llvmIncludePath)
 {
-	KernelContext kernelContext{ kernelName, {}, args, gridDim, blockDim };
+	KernelContext kernelContext{ kernelName, {}, args, executionConfig.gridDim, executionConfig.blockDim, executionConfig.dynamicMemorySize };
 	StaticAnalyzer staticAnalyzer(kernelContext);
 	if (outputFile.empty()) {
 		staticAnalyzer.Analyze(filePath, additionalIncludeDirs, std::cout, false, llvmIncludePath);

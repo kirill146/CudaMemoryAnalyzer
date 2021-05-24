@@ -58,7 +58,7 @@ std::vector<std::string> ASTWalker::findIncludes(char const* llvmIncludePath) co
 	if (!std::filesystem::exists(llvmInclude)) {
 		throw AnalyzerException("LLVM include path not found");
 	}
-
+	//std::cout << VCIncludePath << std::endl << UCRTIncludePath << std::endl;
 	return {
 		nvGpuToolkitInclude.string(),
 		llvmInclude.string(),

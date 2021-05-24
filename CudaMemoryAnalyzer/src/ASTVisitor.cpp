@@ -292,8 +292,26 @@ std::unique_ptr<Expression> ASTVisitor::ProcessArraySubscriptExpr(clang::ArraySu
 	ExpressionType type(qualType, getSort(qualType), getArraySize(qualType));
 	int array_size = getArraySize(base->getType());
 	std::string array_name = getArrayName(base);
+	//bool dynamicSharedArray = false;
+	clang::VarDecl const* dynamicSharedArray = nullptr;
+	if (clang::isa<clang::DeclRefExpr>(base)) {
+		clang::DeclRefExpr const* dre = clang::cast<clang::DeclRefExpr>(base);
+		if (clang::isa<clang::VarDecl>(dre->getDecl())) {
+			clang::VarDecl const* varDecl = clang::cast<clang::VarDecl>(dre->getDecl());
+			if (varDecl->hasExternalStorage() && varDecl->hasAttr<clang::CUDASharedAttr>()
+				&& varDecl->getType()->isArrayType())
+			{
+				dynamicSharedArray = varDecl;
+			}
+		}
+	}
 	if (array_size == -1 && analyzerContext->kernelContext.argSizes.count(array_name)) {
 		array_size = (int)analyzerContext->kernelContext.argSizes[array_name];
+	}
+	if (array_size == -1 && dynamicSharedArray != nullptr) {
+		int elemSize = (int)astContext->getTypeSize(dynamicSharedArray->getType()->getArrayElementTypeNoTypeQual()) / 8;
+		array_size = (int)analyzerContext->kernelContext.dynamicSharedMemSize / elemSize;
+		Log(std::cout << "dsa_size: " << array_size << std::endl << "elem_sz: " << elemSize << std::endl);
 	}
 	return std::make_unique<ArraySubscriptExpression>(std::move(base_res), std::move(index_res), array_size,
 		type, expr->getIdx()->getExprLoc());
@@ -352,6 +370,12 @@ std::unique_ptr<Statement> ASTVisitor::ProcessDecl(clang::Decl* decl) {
 	}
 	if (clang::isa<clang::VarDecl>(decl)) {
 		auto varDecl = clang::cast<clang::VarDecl>(decl);
+		if (varDecl->hasExternalStorage()) {
+			Log(std::cout << "extern ");
+		}
+		if (varDecl->hasAttr<clang::CUDASharedAttr>()) {
+			Log(std::cout << "__shared__ ");
+		}
 		Log(std::cout << varDecl->getType().getAsString() << ' ');
 		std::string name = varDecl->getName().str();
 		Log(std::cout << name);
@@ -645,7 +669,13 @@ int ASTVisitor::getArraySize(clang::QualType const& type) const {
 	}
 	//if (type->isConstantArrayType()) {
 	if (clang::isa<clang::ConstantArrayType>(type)) {
+		Log(std::cout << "[arr_sz: " <<
+			static_cast<int>(clang::cast<clang::ConstantArrayType>(type)->getSize().getLimitedValue())
+			<< ' ';)
 		return static_cast<int>(clang::cast<clang::ConstantArrayType>(type)->getSize().getLimitedValue());
+	}
+	if (clang::isa<clang::IncompleteArrayType>(type)) {
+		Log(std::cout << "[IAT]");
 	}
 	return -1;
 }

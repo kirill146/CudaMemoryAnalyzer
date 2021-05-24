@@ -35,6 +35,7 @@
   <ItemGroup>
     <ClInclude Include="inc\AnalyzerException.h" />
     <ClInclude Include="inc\CudaMemoryAnalyzer.h" />
+    <ClInclude Include="inc\ExecutionConfig.h" />
     <ClInclude Include="src\AbstractRule.h" />
     <ClInclude Include="src\AnalyzerContext.h" />
     <ClInclude Include="src\ArrayOwerflowRule.h" />

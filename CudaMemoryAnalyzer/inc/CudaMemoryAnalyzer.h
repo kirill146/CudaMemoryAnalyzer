@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <ExecutionConfig.h>
 
 struct dim3;
 
@@ -9,8 +10,7 @@ void checkBufferOverflows(std::string const& filePath,
 	std::vector<std::string> const& additionalIncludeDirs,
 	std::vector<void const*> const& args,
 	std::string const& outputFile,
-	dim3 const& gridDim,
-	dim3 const& blockDim,
+	ExecutionConfig const& executionConfig,
 	char const* llvmIncludePath = "");
 
 void checkRestrictViolations(std::string const& filePath,
@@ -18,6 +18,5 @@ void checkRestrictViolations(std::string const& filePath,
 	std::vector<std::string> const& additionalIncludeDirs,
 	std::vector<void const*> const& args,
 	std::string const& outputFile,
-	dim3 const& gridDim,
-	dim3 const& blockDim,
+	ExecutionConfig const& executionConfig,
 	char const* llvmIncludePath = "");
