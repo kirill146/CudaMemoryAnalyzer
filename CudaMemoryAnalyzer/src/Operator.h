@@ -42,7 +42,8 @@ enum BinaryOperation {
     DIV_ASSIGN,
     REM_ASSIGN,
     XOR_ASSIGN,
-    BO_UNDEFINED
+    BO_UNDEFINED,
+    COMMA
 };
 
 class UnaryOperator : public Expression {

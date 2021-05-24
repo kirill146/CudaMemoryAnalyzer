@@ -148,6 +148,8 @@ z3::expr BinaryOperator::toZ3Expr(State const* state) const {
 	case DIV_ASSIGN:
 	case REM_ASSIGN:
 		return state->z3_ctx->bool_val(true); // rhs?
+	case COMMA:
+		return rhs->toZ3Expr(state);
 	}
 	throw AnalyzerException("Unknown binary operator at toZ3Expr()");
 }
@@ -174,8 +176,11 @@ void BinaryOperator::modifyState(State* state) const {
 	case REM_ASSIGN:
 		assignNewValue(lhs.get(), l - r * (l / r), state);
 		return;
+	case COMMA:
+		lhs->modifyState(state);
+		rhs->modifyState(state);
 	case XOR_ASSIGN:
-		throw AnalyzerException("XOR_ASSIGN unsupported");
+		//throw AnalyzerException("XOR_ASSIGN unsupported");
 		return;
 	case ADD:
 	case SUB:

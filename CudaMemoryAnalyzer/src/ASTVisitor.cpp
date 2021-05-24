@@ -83,7 +83,8 @@ std::unique_ptr<Expression> ASTVisitor::ProcessBinaryOperator(clang::BinaryOpera
 		{ clang::BO_MulAssign, MUL_ASSIGN },
 		{ clang::BO_DivAssign, DIV_ASSIGN },
 		{ clang::BO_RemAssign, REM_ASSIGN },
-		{ clang::BO_XorAssign, XOR_ASSIGN }
+		{ clang::BO_XorAssign, XOR_ASSIGN },
+		{ clang::BO_Comma, COMMA }
 	};
 	if (opMap.find(opCode) != opMap.end()) {
 		return std::make_unique<BinaryOperator>(opMap.at(opCode), std::move(lhs), std::move(rhs),
@@ -311,7 +312,7 @@ std::unique_ptr<Expression> ASTVisitor::ProcessArraySubscriptExpr(clang::ArraySu
 	if (array_size == -1 && dynamicSharedArray != nullptr) {
 		int elemSize = (int)astContext->getTypeSize(dynamicSharedArray->getType()->getArrayElementTypeNoTypeQual()) / 8;
 		array_size = (int)analyzerContext->kernelContext.dynamicSharedMemSize / elemSize;
-		Log(std::cout << "dsa_size: " << array_size << std::endl << "elem_sz: " << elemSize << std::endl);
+		//Log(std::cout << "dsa_size: " << array_size << std::endl << "elem_sz: " << elemSize << std::endl);
 	}
 	return std::make_unique<ArraySubscriptExpression>(std::move(base_res), std::move(index_res), array_size,
 		type, expr->getIdx()->getExprLoc());
@@ -447,6 +448,10 @@ std::unique_ptr<Statement> ASTVisitor::ProcessReturnStmt(clang::ReturnStmt* retu
 std::unique_ptr<Statement> ASTVisitor::ProcessStmt(clang::Stmt* stmt) {
 	if (clang::isa<clang::NullStmt>(stmt)) {
 		return nullptr;
+	}
+	if (clang::isa<clang::AttributedStmt>(stmt)) {
+		auto as = clang::cast<clang::AttributedStmt>(stmt);
+		return ProcessStmt(as->getSubStmt());
 	}
 	if (clang::isa<clang::IfStmt>(stmt)) {
 		return ProcessIfStmt(clang::cast<clang::IfStmt>(stmt));
@@ -669,13 +674,7 @@ int ASTVisitor::getArraySize(clang::QualType const& type) const {
 	}
 	//if (type->isConstantArrayType()) {
 	if (clang::isa<clang::ConstantArrayType>(type)) {
-		Log(std::cout << "[arr_sz: " <<
-			static_cast<int>(clang::cast<clang::ConstantArrayType>(type)->getSize().getLimitedValue())
-			<< ' ';)
 		return static_cast<int>(clang::cast<clang::ConstantArrayType>(type)->getSize().getLimitedValue());
-	}
-	if (clang::isa<clang::IncompleteArrayType>(type)) {
-		Log(std::cout << "[IAT]");
 	}
 	return -1;
 }

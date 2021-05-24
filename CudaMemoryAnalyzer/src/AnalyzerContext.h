@@ -10,6 +10,5 @@ struct AnalyzerContext {
 	{}
 	KernelContext kernelContext;
 	RuleContext ruleContext;
-	std::unique_ptr<Statement> kernelBody;
-
+	std::unique_ptr<Statement> kernelBody = nullptr;
 };

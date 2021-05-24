@@ -25,6 +25,9 @@ void StaticAnalyzer::Analyze(
 	} else {
 		rule = std::make_unique<RestrictViolationRule>(&analyzerContext.ruleContext, &walker);
 	}
+	if (analyzerContext.kernelBody == nullptr) {
+		throw AnalyzerException("Kernel " + analyzerContext.kernelContext.kernelName + " not found or not parsed because of unsupported language features");
+	}
 	rule->apply(analyzerContext.kernelBody.get());
 
 	for (auto entry : rule->errors) {
