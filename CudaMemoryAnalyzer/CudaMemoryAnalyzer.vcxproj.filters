@@ -18,9 +18,6 @@
     <ClCompile Include="src\AbstractRule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\AnalyzerException.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\ArrayOwerflowRule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -128,13 +125,13 @@
     <ClInclude Include="src\StaticAnalyzer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\AnalyzerException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="inc\CudaMemoryAnalyzer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\ExecutionConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AnalyzerException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

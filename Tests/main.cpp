@@ -5,7 +5,6 @@
 #include <filesystem>
 #include "CudaBuffer.h"
 #include <vector_types.h>
-#include "AnalyzerException.h"
 
 #ifdef _WIN32
 #define PATH_SEPARATOR "\\"
@@ -239,8 +238,6 @@ int main(int argc, char *argv[]) {
 		//test_float();
 		//test_template();
 		run_tests();
-	} catch (AnalyzerException& e) {
-		std::cout << "AnalyzerException: " << e.what() << std::endl;
 	} catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
 		return -1;

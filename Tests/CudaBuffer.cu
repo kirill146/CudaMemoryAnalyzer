@@ -1,13 +1,13 @@
 #include "CudaBuffer.h"
 #include <cuda.h>
-#include "AnalyzerException.h"
+#include <stdexcept>
 
 CudaBuffer::CudaBuffer(size_t size)
     : buf(nullptr)
 {
     cudaError_t err = cudaMalloc(&buf, size);
     if (err != CUDA_SUCCESS) {
-        throw AnalyzerException("Cannot allocate device memory");
+        throw std::exception("Cannot allocate device memory");
     }
 }
 

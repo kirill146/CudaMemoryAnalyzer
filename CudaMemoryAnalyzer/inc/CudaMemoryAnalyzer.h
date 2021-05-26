@@ -1,9 +1,7 @@
 #pragma once
-
-#include <unordered_map>
+#include <string>
+#include <vector>
 #include <ExecutionConfig.h>
-
-struct dim3;
 
 void checkBufferOverflows(std::string const& filePath,
 	std::string const& kernelName,
