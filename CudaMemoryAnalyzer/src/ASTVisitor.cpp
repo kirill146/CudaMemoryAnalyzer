@@ -514,21 +514,45 @@ void ASTVisitor::AddInitialVarConstraint(clang::QualType type, std::string const
 	state->variableVersions[name] = state->acquireNextVersion(name);
 	int typeSize = (int)astContext->getTypeSize(type);
 	if (type->isIntegerType()) {
-		if (typeSize == 8) {
+		switch (typeSize) {
+		case 8: {
 			int8_t value = *(int8_t*)ptr;
 			state->predicates.push_back(z3::expr(var == value));
-		} else if (typeSize == 16) {
+			break;
+		}
+		case 16: {
 			int16_t value = *(int16_t*)ptr;
 			state->predicates.push_back(z3::expr(var == value));
-		} else if (typeSize == 32) {
+			break;
+		}
+		case 32: {
 			int32_t value = *(int32_t*)ptr;
 			state->predicates.push_back(z3::expr(var == value));
-		} else if (typeSize == 64) {
+			break;
+		}
+		case 64: {
 			z3::expr value = state->z3_ctx->int_val(*(int64_t*)ptr);
 			state->predicates.push_back(z3::expr(var == value));
+			break;
+		}
+		default:
+			throw AnalyzerException("Unknown integer type argument");
 		}
 	} else if (type->isFloatingType()) {
-		throw AnalyzerException("Unknown floating type argument");
+		switch (typeSize) {
+		case 32: {
+			z3::expr value = state->z3_ctx->real_val(std::to_string(*(float*)ptr).c_str());
+			state->predicates.push_back(z3::expr(var == value));
+			break;
+		}
+		case 64: {
+			z3::expr value = state->z3_ctx->real_val(std::to_string(*(double*)ptr).c_str());
+			state->predicates.push_back(z3::expr(var == value));
+			break;
+		}
+		default:
+			throw AnalyzerException("Unknown floating type argument");
+		}
 	}
 }
 

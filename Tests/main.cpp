@@ -38,6 +38,7 @@ void test_output(std::filesystem::path const& fileName, std::string const& kerne
 	std::string expectedFile = std::string(OUT) + kernelName + ".expected";
 	std::cout << "File name: " << fileName << std::endl;
 	std::cout << "Kernel name: " << kernelName << std::endl;
+	//outputFile = "";
 	if (checkOverflows) {
 		checkBufferOverflows(fileName.string(), kernelName, {}, args, {}, outputFile, { gridDim, blockDim }, llvmIncludePath);
 	} else {
@@ -202,6 +203,19 @@ void test_template() {
 	);
 }
 
+void test_float() {
+	CudaBuffer a(4 * sizeof(float));
+	float x = 3.0f;
+	checkBufferOverflows(
+		"kernel.cu",
+		"test_float",
+		{},
+		{ &x },
+		{},
+		"",
+		{ 1, 1 });
+}
+
 void run_tests() {
 	test_restrict_sum();
 	test_restrict_accesses();
@@ -222,6 +236,7 @@ int main(int argc, char *argv[]) {
 		llvmIncludePath = argv[1];
 	}
 	try {
+		//test_float();
 		//test_template();
 		run_tests();
 	} catch (AnalyzerException& e) {
