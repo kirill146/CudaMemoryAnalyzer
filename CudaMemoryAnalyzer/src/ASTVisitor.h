@@ -28,6 +28,8 @@ public:
 	z3::sort getSort(clang::QualType const& type) const;
 	z3::sort arrayOfSort(z3::sort const& type) const;
 	int getArraySize(clang::QualType const& type) const;
+	void AddInitialVarConstraint(clang::QualType type, std::string const& name,
+		void const* ptr);
 private:
 	AnalyzerContext* analyzerContext;
 	State* state;

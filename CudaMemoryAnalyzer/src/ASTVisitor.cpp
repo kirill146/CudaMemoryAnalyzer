@@ -129,6 +129,9 @@ std::unique_ptr<Expression> ASTVisitor::ProcessExpr(clang::Expr const* expr) {
 	if (clang::isa<clang::CallExpr>(expr)) {
 		return ProcessCallExpr(clang::cast<clang::CallExpr>(expr));
 	}
+	if (clang::isa<clang::SubstNonTypeTemplateParmExpr>(expr)) {
+		return ProcessExpr(clang::cast<clang::SubstNonTypeTemplateParmExpr>(expr)->getReplacement());
+	}
 	if (clang::isa<clang::CXXConstructExpr>(expr)) {
 		Log(auto constructExpr = clang::cast<clang::CXXConstructExpr>(expr));
 		Log(std::cout << constructExpr->getConstructor()->getID() << std::endl);
@@ -446,7 +449,7 @@ std::unique_ptr<Statement> ASTVisitor::ProcessReturnStmt(clang::ReturnStmt* retu
 }
 
 std::unique_ptr<Statement> ASTVisitor::ProcessStmt(clang::Stmt* stmt) {
-	if (clang::isa<clang::NullStmt>(stmt)) {
+	if (stmt == nullptr || clang::isa<clang::NullStmt>(stmt)) {
 		return nullptr;
 	}
 	if (clang::isa<clang::AttributedStmt>(stmt)) {
@@ -504,6 +507,31 @@ std::unique_ptr<Statement> ASTVisitor::ProcessCompoundStmt(clang::CompoundStmt* 
 	return std::make_unique<CompoundStatement>(std::move(statements), compoundStmt->getBeginLoc());
 }
 
+void ASTVisitor::AddInitialVarConstraint(clang::QualType type, std::string const& name,
+	void const* ptr)
+{
+	z3::expr var = state->z3_ctx->constant((name + "!0").c_str(), getSort(type));
+	state->variableVersions[name] = state->acquireNextVersion(name);
+	int typeSize = (int)astContext->getTypeSize(type);
+	if (type->isIntegerType()) {
+		if (typeSize == 8) {
+			int8_t value = *(int8_t*)ptr;
+			state->predicates.push_back(z3::expr(var == value));
+		} else if (typeSize == 16) {
+			int16_t value = *(int16_t*)ptr;
+			state->predicates.push_back(z3::expr(var == value));
+		} else if (typeSize == 32) {
+			int32_t value = *(int32_t*)ptr;
+			state->predicates.push_back(z3::expr(var == value));
+		} else if (typeSize == 64) {
+			z3::expr value = state->z3_ctx->int_val(*(int64_t*)ptr);
+			state->predicates.push_back(z3::expr(var == value));
+		}
+	} else if (type->isFloatingType()) {
+		throw AnalyzerException("Unknown floating type argument");
+	}
+}
+
 bool ASTVisitor::VisitFunctionDecl(clang::FunctionDecl* f) {
 	astContext = &f->getASTContext();
 	std::string functionName = f->getNameInfo().getName().getAsString();
@@ -517,13 +545,87 @@ bool ASTVisitor::VisitFunctionDecl(clang::FunctionDecl* f) {
 		Log(std::cout << "[Unparsed host function " << functionName << "]" << std::endl);
 		return true;
 	}
+	//if (clang::isa<clang::FunctionTemplateDecl>(f)) {
 	if (f->isTemplated()) {
-		Log(std::cout << "[Unparsed templated function]" << std::endl);
 		return true;
+		//auto td = ftd->getTemplatedDecl();
+		//auto tpl = ftd->getTemplateParameters();
+		#if 0
+		auto tpl = f->getDescribedTemplateParams();
+		
+		if (tpl == nullptr) {
+			Log(std::cout << "[Unparsed templated function]" << std::endl);
+			return true;
+		}
+		bool allTemplateParamsAreNonTypes = true;
+		for (int i = 0; i < (int)tpl->size(); i++) {
+			if (!clang::isa<clang::NonTypeTemplateParmDecl>(tpl->getParam(i))) {
+				allTemplateParamsAreNonTypes = false;
+				break;
+			}
+		}
+		if (!allTemplateParamsAreNonTypes) {
+			Log(std::cout << "[Unparsed templated function]" << std::endl);
+			return true;
+		}
+		Log(std::cout << "template <");
+		for (int i = 0; i < (int)tpl->size(); i++) {
+			auto nttpd = clang::cast<clang::NonTypeTemplateParmDecl>(tpl->getParam(i));
+			std::string name = nttpd->getName().str();
+			clang::QualType type = nttpd->getType();
+			if (i != 0) {
+				Log(std::cout << ", ";)
+			}
+			Log(std::cout << type.getAsString() << ' ' << name);
+			AddInitialVarConstraint(type, name, &analyzerContext->kernelContext.templateArgValues[i]);
+			/*if (type->isIntegerType()) {
+				int typeSize = (int)astContext->getTypeSize(type);
+				if (typeSize == 32) {
+					std::cout << "int\n";
+				} else if (typeSize == 64) {
+					std::cout << "size_t\n";
+				}
+			} else {
+				std::cout << "smth else\n";
+			}*/
+		}
+		Log(std::cout << ">\n");
+		#endif
 	}
+	//bool foundGlobalInstantiation = false;
 	if (f->isTemplateInstantiation()) {
-		Log(std::cout << "[Unparsed templated instantiation]" << std::endl);
-		return true;
+		if (!f->hasAttr<clang::CUDAGlobalAttr>()) {
+			Log(std::cout << "[Unparesed templated device function]\n");
+			return true;
+		}
+		auto tsa = f->getTemplateSpecializationArgs();
+		if (tsa == nullptr) {
+			std::cout << "no tsa\n";
+			return true;
+		}
+
+		bool allArgsAreIntegral = true;
+		for (int i = 0; i < (int)tsa->size(); i++) {
+			if (tsa->get(i).getKind() != clang::TemplateArgument::ArgKind::Integral) {
+				allArgsAreIntegral = false;
+				break;
+			}
+		}
+		if (!allArgsAreIntegral) {
+			return true;
+		}
+
+		std::vector<uint64_t> templateArgs;
+		for (int i = 0; i < (int)tsa->size(); i++) {
+			templateArgs.push_back(tsa->get(i).getAsIntegral().getLimitedValue());
+		}
+		if (templateArgs == analyzerContext->kernelContext.templateArgValues) {
+			Log(std::cout << "FOUND correct global instantiation\n");
+			//foundGlobalInstantiation = true;
+		} else {
+			Log(std::cout << "[Unparsed templated global function instantiation]" << std::endl);
+			return true;
+		}
 	}
 	if (f->isCXXClassMember()) {
 		Log(std::cout << "[Unparsed class member]" << std::endl);
@@ -550,26 +652,7 @@ bool ASTVisitor::VisitFunctionDecl(clang::FunctionDecl* f) {
 			Log(std::cout << ", ");
 		}
 		if (f->hasAttr<clang::CUDAGlobalAttr>()) {
-			z3::expr var = state->z3_ctx->constant((name + "!0").c_str(), getSort(type));
-			state->variableVersions[name] = state->acquireNextVersion(name);
-			int typeSize = (int)astContext->getTypeSize(type);
-			if (type->isIntegerType()) {
-				if (typeSize == 8) {
-					int8_t value = *(int8_t*)analyzerContext->kernelContext.scalarArgValues[i];
-					state->predicates.push_back(z3::expr(var == value));
-				} else if (typeSize == 16) {
-					int16_t value = *(int16_t*)analyzerContext->kernelContext.scalarArgValues[i];
-					state->predicates.push_back(z3::expr(var == value));
-				} else if (typeSize == 32) {
-					int32_t value = *(int32_t*)analyzerContext->kernelContext.scalarArgValues[i];
-					state->predicates.push_back(z3::expr(var == value));
-				} else if (typeSize == 64) {
-					z3::expr value = state->z3_ctx->int_val(*(int64_t*)analyzerContext->kernelContext.scalarArgValues[i]);
-					state->predicates.push_back(z3::expr(var == value));
-				}
-			} else if (type->isFloatingType()) {
-				throw AnalyzerException("Unknown floating type argument");
-			}
+			AddInitialVarConstraint(type, name, analyzerContext->kernelContext.scalarArgValues[i]);
 			int array_size = getArraySize(type);
 			auto sort = getSort(type);
 			if (type->isPointerType()) {
@@ -672,7 +755,6 @@ int ASTVisitor::getArraySize(clang::QualType const& type) const {
 	if (type->isExtVectorType()) {
 		return clang::cast<clang::ExtVectorType>(type.getDesugaredType(*astContext))->getNumElements();
 	}
-	//if (type->isConstantArrayType()) {
 	if (clang::isa<clang::ConstantArrayType>(type)) {
 		return static_cast<int>(clang::cast<clang::ConstantArrayType>(type)->getSize().getLimitedValue());
 	}

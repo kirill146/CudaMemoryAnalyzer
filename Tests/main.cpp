@@ -39,9 +39,9 @@ void test_output(std::filesystem::path const& fileName, std::string const& kerne
 	std::cout << "File name: " << fileName << std::endl;
 	std::cout << "Kernel name: " << kernelName << std::endl;
 	if (checkOverflows) {
-		checkBufferOverflows(fileName.string(), kernelName, {}, args, outputFile, { gridDim, blockDim }, llvmIncludePath);
+		checkBufferOverflows(fileName.string(), kernelName, {}, args, {}, outputFile, { gridDim, blockDim }, llvmIncludePath);
 	} else {
-		checkRestrictViolations(fileName.string(), kernelName, {}, args, outputFile, { gridDim, blockDim }, llvmIncludePath);
+		checkRestrictViolations(fileName.string(), kernelName, {}, args, {}, outputFile, { gridDim, blockDim }, llvmIncludePath);
 	}
 	std::vector<std::string> actual = readLines(outputFile);
 	std::vector<std::string> expected = readLines(expectedFile);
@@ -146,7 +146,7 @@ void test_restrict_self_assignment() {
 	args.push_back(a.Get());
 
 	std::string fileName = KERNELS "test_restrict.cu";
-	//checkRestrictViolations(fileName, "test_restrict_self_assignment", {}, args, "", { dim3(1), dim3(1) });
+	//checkRestrictViolations(fileName, "test_restrict_self_assignment", {}, args, {}, "", { dim3(1), dim3(1) });
 	test_output(fileName, "test_restrict_self_assignment", args, false);
 }
 
@@ -158,7 +158,7 @@ void test_restrict_accesses(std::string const& kernelName, dim3 gridDim = dim3(1
 	args.push_back(a.Get());
 
 	std::string fileName = KERNELS "test_restrict.cu";
-	//checkRestrictViolations(fileName, kernelName, {}, processed_arg_sizes, args, "", { gridDim, blockDim });
+	//checkRestrictViolations(fileName, kernelName, {}, processed_arg_sizes, args, {}, "", { gridDim, blockDim });
 	test_output(fileName, kernelName, args, false, gridDim, blockDim);
 }
 
@@ -171,7 +171,7 @@ void test_restrict_sum() {
 	args.push_back(c.Get());
 
 	std::string fileName = KERNELS "test_restrict.cu";
-	//checkRestrictViolations(fileName, "test_restrict_sum", {}, {}, args, "", { dim3(1), dim3(1) });
+	//checkRestrictViolations(fileName, "test_restrict_sum", {}, {}, args, {}, "", { dim3(1), dim3(1) });
 	test_output(fileName, "test_restrict_sum", args, false);
 }
 
@@ -188,6 +188,18 @@ void test_restrict_accesses() {
 	test_restrict_accesses("test_restrict_read_in_while_condition");
 	test_restrict_accesses("test_restrict_builtin_var_read", dim3(2, 3, 4), dim3(5, 6, 7));
 	test_restrict_accesses("test_restrict_builtin_var_write", dim3(2, 3, 4), dim3(5, 6, 7));
+}
+
+void test_template() {
+	checkBufferOverflows(
+		"kernel.cu",
+		"ggg",
+		{},
+		{},
+		{ 40, 55 },
+		"",
+		{ 1, 1 }
+	);
 }
 
 void run_tests() {
@@ -210,13 +222,14 @@ int main(int argc, char *argv[]) {
 		llvmIncludePath = argv[1];
 	}
 	try {
+		//test_template();
 		run_tests();
 	} catch (AnalyzerException& e) {
 		std::cout << "AnalyzerException: " << e.what() << std::endl;
 	} catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
 		return -1;
-	} catch (...) {
+	} catch(...) {
 		std::cout << "Unknown exception was thrown" << std::endl;
 		return -1;
 	}
