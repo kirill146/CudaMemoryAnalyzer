@@ -21,7 +21,8 @@ void AbstractRule::applyRule(Statement const* statement, bool needCheck) {
 	if (dynamic_cast<IntegerConst const*>(statement) ||
 		dynamic_cast<BoolConst const*>(statement) ||
 		dynamic_cast<RealConst const*>(statement) ||
-		dynamic_cast<AtomicVariable const*>(statement))
+		dynamic_cast<AtomicVariable const*>(statement) ||
+		dynamic_cast<MemberExpression const*>(statement))
 	{
 		// don't apply any rules to these statements
 		return;

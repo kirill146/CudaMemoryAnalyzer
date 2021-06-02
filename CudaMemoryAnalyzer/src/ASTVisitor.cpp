@@ -37,6 +37,15 @@ std::string ASTVisitor::getFunctionName(clang::Expr const* expr) {
 std::unique_ptr<Expression> ASTVisitor::ProcessCallExpr(clang::CallExpr const* callExpr) {
 	clang::QualType qualType = callExpr->getType();
 	ExpressionType type(qualType, getSort(qualType), getArraySize(qualType));
+	if (clang::isa<clang::CXXOperatorCallExpr>(callExpr) &&
+		clang::cast<clang::CXXOperatorCallExpr>(callExpr)->isAssignmentOp())
+	{
+		auto lhs = ProcessExpr(callExpr->getArg(0));
+		Log(std::cout << " = ";);
+		auto rhs = ProcessExpr(callExpr->getArg(1));
+		return std::make_unique<BinaryOperator>(ASSIGN, std::move(lhs), std::move(rhs), type,
+			callExpr->getExprLoc());
+	}
 	std::string functionName = getFunctionName(callExpr->getCallee());
 	Log(std::cout << functionName << "(");
 	int numArgs = callExpr->getNumArgs();
@@ -48,7 +57,8 @@ std::unique_ptr<Expression> ASTVisitor::ProcessCallExpr(clang::CallExpr const* c
 		}
 	}
 	Log(std::cout << ")");
-	return std::make_unique<CallExpression>(functionName, std::move(arguments), type, callExpr->getExprLoc());
+	return std::make_unique<CallExpression>(functionName, std::move(arguments), type,
+		callExpr->getExprLoc());
 }
 
 std::unique_ptr<Expression> ASTVisitor::ProcessBinaryOperator(clang::BinaryOperator const* binaryOperator) {
@@ -123,6 +133,51 @@ std::unique_ptr<Expression> ASTVisitor::ProcessUnaryOperator(clang::UnaryOperato
 	throw AnalyzerException("Undefined unary operator at ProcessUnaryOperator()");
 }
 
+std::unique_ptr<Expression> ASTVisitor::ProcessMemberExpr(clang::MemberExpr const* memberExpr) {
+	clang::QualType qualType = memberExpr->getType();
+	ExpressionType type(qualType, getSort(qualType), getArraySize(qualType));
+	auto base = ProcessExpr(memberExpr->getBase());
+	if (base == nullptr) {
+		return nullptr;
+	}
+	clang::QualType baseType = base->getType().type;
+	//std::cout << "actual type: " << baseType.getAsString() << std::endl;
+	if (baseType->isPointerType()) {
+		Log(std::cout << "->");
+	} else if (baseType->isRecordType()) {
+		Log(std::cout << '.');
+	} else {
+		throw AnalyzerException("Expected Record or Pointer type");
+	}
+	
+	auto decl = memberExpr->getMemberDecl();
+	if (!clang::isa<clang::FieldDecl>(decl)) {
+		throw AnalyzerException("Expected FieldDecl");
+	}
+	auto fieldDecl = clang::cast<clang::FieldDecl>(decl);
+	std::string fieldName = fieldDecl->getName().str();
+	Log(std::cout << fieldName);
+	if (baseType->isPointerType()) {
+		return nullptr;
+	}
+	//std::cout << "just: " << base->getType().type.getAsString() << std::endl;
+	//std::cout << "canonical: " << base->getType().type.getCanonicalType().getAsString() << std::endl;
+	//std::cout << "base type class name: " << base->getType().type->isRecordType() << ' ' << clang::isa<clang::RecordType>(base->getType().type) << std::endl;
+	auto recordDecl = clang::cast<clang::RecordType>(baseType.getCanonicalType())->getDecl();
+	std::string recordName = recordDecl->getName().str();
+	//ExpressionType dreType(baseType, getSort(baseType),	getArraySize(baseType));
+	return std::make_unique<MemberExpression>(
+		std::move(base),
+		recordName,
+		fieldName,
+		type,
+		memberExpr->getBeginLoc()
+	);
+	/*clang::QualType pt = baseType->getPointeeType();
+	int array_size = getArraySize(pt);
+	ExpressionType pointeeType(pt, getSort(pt), array_size);*/
+}
+
 std::unique_ptr<Expression> ASTVisitor::ProcessExpr(clang::Expr const* expr) {
 	clang::QualType qualType = expr->getType();
 	ExpressionType type(qualType, getSort(qualType), getArraySize(qualType));
@@ -133,25 +188,14 @@ std::unique_ptr<Expression> ASTVisitor::ProcessExpr(clang::Expr const* expr) {
 		return ProcessExpr(clang::cast<clang::SubstNonTypeTemplateParmExpr>(expr)->getReplacement());
 	}
 	if (clang::isa<clang::CXXConstructExpr>(expr)) {
-		Log(auto constructExpr = clang::cast<clang::CXXConstructExpr>(expr));
-		Log(std::cout << constructExpr->getConstructor()->getID() << std::endl);
+		auto constructExpr = clang::cast<clang::CXXConstructExpr>(expr);
+		//Log(std::cout << constructExpr->getConstructor()->getID() << std::endl);
 		Log(std::cout << constructExpr->getConstructor()->getDeclName().getAsString());// getAsFunction()->getName().str() << std::endl;
-		Log(std::cout << "[CXXConstructExpr]" << std::endl);
+		Log(std::cout << "[CXXConstructExpr]");
 		return nullptr;
 	}
 	if (clang::isa<clang::MemberExpr>(expr)) {
-		auto memberExpr = clang::cast<clang::MemberExpr>(expr);
-		ProcessExpr(memberExpr->getBase());
-		Log(std::cout << '.');
-		auto decl = memberExpr->getMemberDecl();
-		if (!clang::isa<clang::FieldDecl>(decl)) {
-			throw AnalyzerException("Expected FieldDecl");
-		}
-		Log(auto fieldDecl = clang::cast<clang::FieldDecl>(decl));
-		Log(std::cout << fieldDecl->getName().str());
-		return nullptr;
-		//throw AnalyzerException("cur");
-		//ProcessExpr(memberExpr->getMemberDecl())
+		return ProcessMemberExpr(clang::cast<clang::MemberExpr>(expr));
 	}
 	if (clang::isa<clang::UnaryExprOrTypeTraitExpr>(expr)) {
 		auto sizeofExpr = clang::cast<clang::UnaryExprOrTypeTraitExpr>(expr);
@@ -384,6 +428,14 @@ std::unique_ptr<Statement> ASTVisitor::ProcessDecl(clang::Decl* decl) {
 		std::string name = varDecl->getName().str();
 		Log(std::cout << name);
 		clang::Expr const* initializer = varDecl->getAnyInitializer();
+		if (initializer && clang::isa<clang::CXXConstructExpr>(initializer)) {
+			auto cxxce = clang::cast<clang::CXXConstructExpr>(initializer);
+			if (cxxce->getConstructor()->isCopyConstructor()) {
+				initializer = cxxce->getArg(0);
+			} else {
+				initializer = nullptr;
+			}
+		}
 		if (initializer) {
 			Log(std::cout << " = ");
 		}
@@ -770,6 +822,39 @@ z3::sort ASTVisitor::getSort(clang::QualType const& type) const {
 	if (type->isExtVectorType()) {
 		auto arrayType = clang::cast<clang::ExtVectorType>(type.getDesugaredType(*astContext));
 		return arrayOfSort(getSort(arrayType->getElementType()));
+	}
+	if (type->isRecordType()) {
+	//if (clang::isa<clang::RecordType>(type)) {
+		auto recordDecl = clang::cast<clang::RecordType>(type.getCanonicalType())->getDecl();
+		std::string recordName = recordDecl->getName().str();
+		if (state->ruleContext->recordSorts.count(recordName)) {
+			return state->ruleContext->recordSorts.at(recordName).sort;
+		}
+		std::vector<std::string> fieldNames;
+		std::vector<char const*> fieldNamesCstr;
+		std::vector<z3::sort> fieldSorts;
+		for (auto field : recordDecl->fields()) {
+			fieldNames.push_back(field->getName().str());
+			fieldSorts.push_back(getSort(field->getType()));
+		}
+		for (int i = 0; i < fieldNames.size(); i++) {
+			fieldNamesCstr.push_back(fieldNames[i].c_str());
+		}
+		z3::func_decl_vector getters(*state->z3_ctx);
+		z3::func_decl record = state->z3_ctx->tuple_sort(
+			recordName.c_str(),
+			(unsigned int)fieldNames.size(),
+			fieldNamesCstr.data(),
+			fieldSorts.data(),
+			getters);
+		std::unordered_map<std::string, z3::func_decl> mapGetters;
+		for (int i = 0; i < fieldNames.size(); i++) {
+			mapGetters.insert({ fieldNames[i], getters[i] });
+		}
+		z3::sort recordSort = record.range();
+		state->ruleContext->recordSorts.insert({ recordName, { recordSort, mapGetters } });
+		//std::cout << "insert: " << recordName << std::endl;
+		return recordSort;
 	}
 	return state->z3_ctx->uninterpreted_sort("unknown_sort");
 	//throw AnalyzerException("Not implemented");

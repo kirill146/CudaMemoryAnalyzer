@@ -44,7 +44,7 @@ public:
 	std::string getName() const { return name; }
 	std::string getVersionedName(int version) const;
 	std::string getVarName() const override { return name; }
-	//z3::expr toZ3Expr(State* state) const override;
+	z3::expr toZ3Expr(State const* state) const override;
 protected:
 	std::string name;
 };
@@ -53,7 +53,7 @@ class AtomicVariable : public Variable {
 public:
 	AtomicVariable(std::string name, ExpressionType const& type, uint64_t address,
 		clang::SourceLocation const& location);
-	z3::expr toZ3Expr(State const* state) const override;
+	//z3::expr toZ3Expr(State const* state) const override;
 	z3::expr z3AddressExpr(State const* state) const;
 	uint64_t getAddress() const { return address; }
 private:
@@ -61,6 +61,21 @@ private:
 };
 
 uint64_t const UNUSED_ADDR = 512;
+
+class MemberExpression : public Expression {
+public:
+	MemberExpression(std::unique_ptr<Expression> base, std::string recordName, std::string memberName,
+		ExpressionType const& type, clang::SourceLocation const& location);
+	z3::expr toZ3Expr(State const* state, z3::expr const& recordVar, std::string const& memberName) const;
+	z3::expr toZ3Expr(State const* state) const override;
+	Expression const* getBase() const { return base.get(); }
+	std::string getRecordName() const { return recordName; }
+	std::string getMemberName() const { return memberName; }
+private:
+	std::unique_ptr<Expression> base;
+	std::string recordName;
+	std::string memberName;
+};
 
 class PodStruct : public Variable {
 	PodStruct(std::string name, std::vector<std::unique_ptr<Variable>> fields,

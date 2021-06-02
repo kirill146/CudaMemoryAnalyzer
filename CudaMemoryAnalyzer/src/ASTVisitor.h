@@ -10,6 +10,7 @@ public:
 	std::unique_ptr<Expression> ProcessCallExpr(clang::CallExpr const* callExpr);
 	std::unique_ptr<Expression> ProcessBinaryOperator(clang::BinaryOperator const* binaryOperator);
 	std::unique_ptr<Expression> ProcessUnaryOperator(clang::UnaryOperator const* unaryOperator);
+	std::unique_ptr<Expression> ProcessMemberExpr(clang::MemberExpr const* memberExpr);
 	std::unique_ptr<Expression> ProcessExpr(clang::Expr const* expr);
 	std::unique_ptr<Expression> ProcessArraySubscriptExpr(clang::ArraySubscriptExpr const* expr);
 	std::unique_ptr<Expression> ProcessFloatingLiteralExpr(clang::FloatingLiteral const* expr);

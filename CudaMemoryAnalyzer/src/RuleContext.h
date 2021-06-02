@@ -2,6 +2,11 @@
 #include "State.h"
 #include "Function.h"
 
+struct RecordSortDescriptor {
+	z3::sort sort;
+	std::unordered_map<std::string, z3::func_decl> getters;
+};
+
 class RuleContext {
 public:
 	RuleContext(dim3 const& gridDim, dim3 const& blockDim)
@@ -22,4 +27,5 @@ public:
 	State state;
 	std::unordered_map<std::string, Function> functions;
 	std::vector<MemoryAccess> memoryAccesses;
+	std::unordered_map<std::string, RecordSortDescriptor> recordSorts;
 };

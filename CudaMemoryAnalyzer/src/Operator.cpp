@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Operator.h"
 #include "AnalyzerException.h"
+#include "RuleContext.h"
 
 void assignNewValue(Expression const* dst, z3::expr const& value, State* state) {
 	if (auto variable = dynamic_cast<AtomicVariable const*>(dst)) {
@@ -22,6 +23,49 @@ void assignNewValue(Expression const* dst, z3::expr const& value, State* state) 
 		}
 		//std::cout << "sorts: " << baseExpr.get_sort().to_string() << ' ' << indexExpr.get_sort().to_string() << std::endl;
 		assignNewValue(base, z3::store(baseExpr, indexExpr, value), state);
+	} else if (auto memberExpr = dynamic_cast<MemberExpression const*>(dst)) {
+		auto base = memberExpr->getBase();
+		if (auto var = dynamic_cast<Variable const*>(base)) {
+			z3::expr oldVar = var->toZ3Expr(state);
+			//int oldVersion = state->getVariableVersion(var->getName());
+			std::string name = var->getName();
+			state->variableVersions[name] = state->acquireNextVersion(name);
+			z3::expr newVar = var->toZ3Expr(state);
+			//Variable newVariable(name, var->getType(), var->getLocation());
+			//int newVersion = state->getVariableVersion(var->getName());
+			z3::expr pred = (memberExpr->toZ3Expr(state) == value);
+			for (auto it : state->ruleContext->recordSorts.at(memberExpr->getRecordName()).getters) {
+				if (it.first != memberExpr->getMemberName()) {
+					pred = pred & (memberExpr->toZ3Expr(state, oldVar, it.first) ==
+						memberExpr->toZ3Expr(state, newVar, it.first));
+				}
+			}
+			state->localVariablesPredicates.emplace_back(pred);
+		} else if (auto arrSub = dynamic_cast<ArraySubscriptExpression const*>(base)) {
+			Expression const* arrBase = arrSub->getBase();
+			z3::expr baseExpr = arrBase->toZ3Expr(state);
+			Expression const* arrIndex = arrSub->getIndex();
+			z3::expr indexExpr = arrIndex->toZ3Expr(state);
+			if (arrBase->getType().array_size == -1) {
+				return;
+			}
+
+			z3::expr oldVar = z3::select(baseExpr, indexExpr);
+			std::string sortName = base->getType().sort.to_string();
+			z3::expr tmp = state->getTmp(base->getType().sort);
+			z3::expr pred = memberExpr->toZ3Expr(state, tmp, memberExpr->getMemberName()) == value;
+			for (auto it : state->ruleContext->recordSorts.at(memberExpr->getRecordName()).getters) {
+				if (it.first != memberExpr->getMemberName()) {
+					pred = pred & (memberExpr->toZ3Expr(state, tmp, it.first) ==
+						memberExpr->toZ3Expr(state, oldVar, it.first));
+				}
+			}
+			state->localVariablesPredicates.emplace_back(pred);
+
+			assignNewValue(arrBase, z3::store(baseExpr, indexExpr, tmp), state);
+		} else {
+			throw AnalyzerException("Unexpected member base expr");
+		}
 	} else if (auto op = dynamic_cast<UnaryOperator const*>(dst)) {
 		if (op->getOp() == DEREF) {
 			if (auto arr = dynamic_cast<AtomicVariable const*>(op->getArg())) {

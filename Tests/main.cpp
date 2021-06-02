@@ -1,4 +1,4 @@
-#include "CudaMemoryAnalyzer.h"
+﻿#include "CudaMemoryAnalyzer.h"
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -105,6 +105,12 @@ void test_input_args() {
 	test_output(fileName, "test_input_args", args);
 }
 
+void test_struct() {
+	CudaBuffer a(5 * sizeof(uchar4));
+	std::string fileName = KERNELS "test_struct.cu";
+	test_output(fileName, "test_uchar4", { a.Get() });
+}
+
 void test_restrict_args() {
 	int const sz = 10;
 	CudaBuffer a(sz * sizeof(int));
@@ -190,32 +196,8 @@ void test_restrict_accesses() {
 	test_restrict_accesses("test_restrict_builtin_var_write", dim3(2, 3, 4), dim3(5, 6, 7));
 }
 
-void test_template() {
-	checkBufferOverflows(
-		"kernel.cu",
-		"ggg",
-		{},
-		{},
-		{ 40, 55 },
-		"",
-		{ 1, 1 }
-	);
-}
-
-void test_float() {
-	CudaBuffer a(4 * sizeof(float));
-	float x = 3.0f;
-	checkBufferOverflows(
-		"kernel.cu",
-		"test_float",
-		{},
-		{ &x },
-		{},
-		"",
-		{ 1, 1 });
-}
-
 void run_tests() {
+	test_struct();
 	test_restrict_sum();
 	test_restrict_accesses();
 	test_restrict();
@@ -235,8 +217,6 @@ int main(int argc, char *argv[]) {
 		llvmIncludePath = argv[1];
 	}
 	try {
-		//test_float();
-		//test_template();
 		run_tests();
 	} catch (std::exception& e) {
 		std::cout << e.what() << std::endl;

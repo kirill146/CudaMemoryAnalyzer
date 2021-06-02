@@ -1,0 +1,5 @@
+[Error at test_struct.cu:6:4] Array with size 5 accessed at index 10
+[Error at test_struct.cu:8:4] Array with size 5 accessed at index 10
+[Error at test_struct.cu:11:4] Array with size 5 accessed at index 10
+[Error at test_struct.cu:14:4] Array with size 5 accessed at index 10
+[Error at test_struct.cu:18:4] Array with size 5 accessed at index 9

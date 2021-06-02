@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Expression.h"
 #include "AnalyzerException.h"
+#include "RuleContext.h"
 
 IntegerConst::IntegerConst(uint64_t val, ExpressionType const& type,
 	clang::SourceLocation const& location)
@@ -49,17 +50,17 @@ std::string Variable::getVersionedName(int version) const {
 	return name + "!" + std::to_string(version);
 }
 
+z3::expr Variable::toZ3Expr(State const* state) const {
+	return state->z3_ctx->constant(
+		getVersionedName(state->getVariableVersion(name)).c_str(),
+		type.sort);
+}
+
 AtomicVariable::AtomicVariable(std::string name, ExpressionType const& type, uint64_t address,
 	clang::SourceLocation const& location)
 	: Variable(name, type, location)
 	, address(address)
 {}
-
-z3::expr AtomicVariable::toZ3Expr(State const* state) const {
-	return state->z3_ctx->constant(
-		getVersionedName(state->getVariableVersion(name)).c_str(),
-		type.sort);
-}
 
 z3::expr AtomicVariable::z3AddressExpr(State const* state) const {
 	std::string z3Name = "&" + getVersionedName(state->getVariableVersion(name));
@@ -145,4 +146,25 @@ z3::expr ImplicitCastExpression::toZ3Expr(State const* state) const {
 		return arr->z3AddressExpr(state);
 	}
 	return subExpr->toZ3Expr(state);
+}
+
+MemberExpression::MemberExpression(std::unique_ptr<Expression> base, std::string recordName,
+	std::string memberName, ExpressionType const& type, clang::SourceLocation const& location)
+	: Expression(type, location)
+	, base(std::move(base))
+	, recordName(std::move(recordName))
+	, memberName(std::move(memberName))
+{}
+
+z3::expr MemberExpression::toZ3Expr(State const* state, z3::expr const& recordVar, std::string const& memberName) const {
+	/*z3::expr varExpr = state->z3_ctx->constant(
+		var->getVersionedName(varVersion).c_str(),
+		var->getType().sort); */
+	return state->ruleContext->recordSorts.at(recordName).getters.at(memberName)(recordVar);
+}
+
+z3::expr MemberExpression::toZ3Expr(State const* state) const {
+	z3::expr baseExpr = base->toZ3Expr(state);
+	return state->ruleContext->recordSorts.at(recordName).getters.at(memberName)(baseExpr);
+	//return toZ3Expr(state, state->getVariableVersion(var->getName()), memberName);
 }
