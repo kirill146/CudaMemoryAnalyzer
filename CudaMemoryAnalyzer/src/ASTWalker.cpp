@@ -54,7 +54,7 @@ std::vector<std::string> ASTWalker::findIncludes(char const* llvmIncludePath) co
 		llvmInclude = PathByEnvVar("LLVM_PROJ_DIR");
 		llvmInclude /= "clang\\lib\\Headers";
 	}
-	std::cout << "LLVM include path: " << llvmInclude.string() << std::endl;
+	//std::cout << "LLVM include path: " << llvmInclude.string() << std::endl;
 	if (!std::filesystem::exists(llvmInclude)) {
 		throw AnalyzerException("LLVM include path not found");
 	}

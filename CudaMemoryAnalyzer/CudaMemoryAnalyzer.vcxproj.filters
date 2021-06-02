@@ -134,9 +134,15 @@
     <ClInclude Include="src\AnalyzerException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\CudaBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\CudaUtils.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\CudaBuffer.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
   </ItemGroup>

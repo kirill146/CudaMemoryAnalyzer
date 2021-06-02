@@ -156,11 +156,11 @@ MemberExpression::MemberExpression(std::unique_ptr<Expression> base, std::string
 	, memberName(std::move(memberName))
 {}
 
-z3::expr MemberExpression::toZ3Expr(State const* state, z3::expr const& recordVar, std::string const& memberName) const {
+z3::expr MemberExpression::toZ3Expr(State const* state, z3::expr const& recordVar, std::string const& fieldName) const {
 	/*z3::expr varExpr = state->z3_ctx->constant(
 		var->getVersionedName(varVersion).c_str(),
 		var->getType().sort); */
-	return state->ruleContext->recordSorts.at(recordName).getters.at(memberName)(recordVar);
+	return state->ruleContext->recordSorts.at(recordName).getters.at(fieldName)(recordVar);
 }
 
 z3::expr MemberExpression::toZ3Expr(State const* state) const {

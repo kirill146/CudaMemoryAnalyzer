@@ -19,14 +19,4 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="CudaBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="CudaBuffer.cu">
-      <Filter>Source Files</Filter>
-    </CudaCompile>
-  </ItemGroup>
 </Project>

@@ -1,0 +1,16 @@
+{
+  "file": "..\\Tests\\resources\\kernels\\test_input_args.cu",
+  "kernelName": "test_input_args",
+  "additionalIncludeDirs": [
+    
+  ],
+  "args": [ 8, "1" ],
+  "templateArgs": [ ],
+  "outputFile": null,
+  "gridDim": 1,
+  "blockDim": 1,
+  "dynamicMemorySize": 0,
+  "llvmIncludePath": null,
+  "checkBufferOverflows": true,
+  "checkRestrictViolations":  false
+}

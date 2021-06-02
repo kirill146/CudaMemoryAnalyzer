@@ -8,4 +8,5 @@
 /Tests/ast_dump.cpp
 /Tests/preprocessed_kernel.cpp
 /cma/x64/
-/cma/vectorAdd.json
+*.json
+!/cma/example.json

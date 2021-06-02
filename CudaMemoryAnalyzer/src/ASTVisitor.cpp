@@ -188,7 +188,7 @@ std::unique_ptr<Expression> ASTVisitor::ProcessExpr(clang::Expr const* expr) {
 		return ProcessExpr(clang::cast<clang::SubstNonTypeTemplateParmExpr>(expr)->getReplacement());
 	}
 	if (clang::isa<clang::CXXConstructExpr>(expr)) {
-		auto constructExpr = clang::cast<clang::CXXConstructExpr>(expr);
+		Log(auto constructExpr = clang::cast<clang::CXXConstructExpr>(expr);)
 		//Log(std::cout << constructExpr->getConstructor()->getID() << std::endl);
 		Log(std::cout << constructExpr->getConstructor()->getDeclName().getAsString());// getAsFunction()->getName().str() << std::endl;
 		Log(std::cout << "[CXXConstructExpr]");
