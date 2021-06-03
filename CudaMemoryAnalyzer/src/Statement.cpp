@@ -23,10 +23,20 @@ DeclStatement::DeclStatement(std::unique_ptr<AtomicVariable> variable, std::uniq
 {}
 
 void DeclStatement::modifyState(State* state) const {
+	if (variable == nullptr ||
+		variable->getType().sort.name().str() == "unknown_sort")
+	{
+		PEDANTIC_THROW("Cannot assign value");
+		return;
+	}
 	std::string varName = variable->getName();
 	state->variableVersions[varName] = state->acquireNextVersion(varName);
 	state->variableTypes.insert({ varName, variable->getType() });
 	if (initializer) {
+		if (initializer->getType().sort.name().str() == "unknown_sort") {
+			PEDANTIC_THROW("Cannot assign value");
+			return;
+		}
 		if (variable->getType().sort.is_int() && initializer->getType().sort.is_array()) {
 			auto* arr = dynamic_cast<AtomicVariable const*>(initializer.get());
 			if (!arr) {

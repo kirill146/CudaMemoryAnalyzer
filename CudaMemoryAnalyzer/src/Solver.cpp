@@ -15,6 +15,7 @@ std::optional<z3::model> getErrorModel(State const* state, z3::expr const& rule)
     //std::cout << "========================\n";
     if (s.check() == z3::sat) {
         //std::cout << s.to_smt2() << std::endl;
+        //std::cout << "========================\n";
         //std::cout << s.get_model().to_string() << std::endl;
         return z3::model(s.get_model());
     }

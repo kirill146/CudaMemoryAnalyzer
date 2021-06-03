@@ -100,7 +100,8 @@ std::unique_ptr<Expression> ASTVisitor::ProcessBinaryOperator(clang::BinaryOpera
 		return std::make_unique<BinaryOperator>(opMap.at(opCode), std::move(lhs), std::move(rhs),
 			type, binaryOperator->getOperatorLoc());
 	}
-	throw AnalyzerException("Undefined binary operator at ProcessBinaryOperator()");
+	PEDANTIC_THROW("Undefined binary operator at ProcessBinaryOperator()");
+	return nullptr;
 }
 
 std::unique_ptr<Expression> ASTVisitor::ProcessUnaryOperator(clang::UnaryOperator const* unaryOperator) {
@@ -130,7 +131,8 @@ std::unique_ptr<Expression> ASTVisitor::ProcessUnaryOperator(clang::UnaryOperato
 		return std::make_unique<UnaryOperator>(opMap.at(opCode), std::move(arg), type,
 			unaryOperator->getOperatorLoc());
 	}
-	throw AnalyzerException("Undefined unary operator at ProcessUnaryOperator()");
+	PEDANTIC_THROW("Undefined unary operator at ProcessUnaryOperator()");
+	return nullptr;
 }
 
 std::unique_ptr<Expression> ASTVisitor::ProcessMemberExpr(clang::MemberExpr const* memberExpr) {
@@ -449,7 +451,8 @@ std::unique_ptr<Statement> ASTVisitor::ProcessDecl(clang::Decl* decl) {
 				name, type, analyzerContext->ruleContext.allocateMemory(size), location),
 			initializer ? ProcessExpr(initializer) : nullptr, location);
 	}
-	throw AnalyzerException("Unexpected declaration");
+	PEDANTIC_THROW("Unexpected declaration");
+	return nullptr;
 }
 
 std::unique_ptr<Statement> ASTVisitor::ProcessIfStmt(clang::IfStmt* ifStmt) {
@@ -533,7 +536,9 @@ std::unique_ptr<Statement> ASTVisitor::ProcessStmt(clang::Stmt* stmt) {
 	if (clang::isa<clang::Expr>(stmt)) {
 		return ProcessExpr(clang::cast<clang::Expr>(stmt));
 	}
-	throw AnalyzerException("Unknown statement " + std::string(stmt->getStmtClassName()));
+
+	PEDANTIC_THROW("Unknown statement " + std::string(stmt->getStmtClassName()));
+	return nullptr;
 }
 
 std::unique_ptr<Statement> ASTVisitor::ProcessDeclStmt(clang::DeclStmt* declStmt) {
@@ -860,6 +865,7 @@ z3::sort ASTVisitor::getSort(clang::QualType const& type) const {
 		//std::cout << "insert: " << recordName << std::endl;
 		return recordSort;
 	}
+	Log(std::cout << "[UNKNOWN_SORT]");
 	return state->z3_ctx->uninterpreted_sort("unknown_sort");
 	//throw AnalyzerException("Not implemented");
 }

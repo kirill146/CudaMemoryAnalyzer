@@ -14,3 +14,9 @@ public:
 private:
 	std::string msg;
 };
+
+#ifdef PEDANTIC_DEBUG
+#define PEDANTIC_THROW(s) throw AnalyzerException(s)
+#else
+#define PEDANTIC_THROW(s)
+#endif

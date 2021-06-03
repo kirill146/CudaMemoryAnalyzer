@@ -64,7 +64,8 @@ void assignNewValue(Expression const* dst, z3::expr const& value, State* state) 
 
 			assignNewValue(arrBase, z3::store(baseExpr, indexExpr, tmp), state);
 		} else {
-			throw AnalyzerException("Unexpected member base expr");
+			PEDANTIC_THROW("Unexpected member base expr");
+			return;
 		}
 	} else if (auto op = dynamic_cast<UnaryOperator const*>(dst)) {
 		if (op->getOp() == DEREF) {
@@ -75,10 +76,12 @@ void assignNewValue(Expression const* dst, z3::expr const& value, State* state) 
 				assignNewValue(arr, z3::store(arr->toZ3Expr(state), 0, value), state);
 			}
 		} else {
-			throw AnalyzerException("Unknown unary operator at dst in assignNewValue()");
+			PEDANTIC_THROW("Unknown unary operator at dst in assignNewValue()");
+			return;
 		}
 	} else {
-		throw AnalyzerException("Unknown dst expression at assignNewValue()");
+		PEDANTIC_THROW("Unknown dst expression at assignNewValue()");
+		return;
 	}
 }
 
@@ -90,7 +93,11 @@ UnaryOperator::UnaryOperator(UnaryOperation op, std::unique_ptr<Expression> arg,
 {}
 
 z3::expr UnaryOperator::toZ3Expr(State const* state) const {
-	auto x = arg->toZ3Expr(state);
+	if (arg == nullptr) {
+		PEDANTIC_THROW("UnaryOperator::toZ3Expr, nullptr arg");
+		return state->getUndefined(type.sort);
+	}
+	z3::expr x = arg->toZ3Expr(state);
 	switch (op) {
 	case PRE_INCREMENT:
 		return x + 1;
@@ -102,19 +109,24 @@ z3::expr UnaryOperator::toZ3Expr(State const* state) const {
 	case NEGATE:
 		return -x;
 	case LNOT:
+		if (x.get_sort().is_int()) {
+			return x != 0;
+		}
 		return !x;
-	case ADDR_OF:
-		throw AnalyzerException("toZ3Expr() ADDR_OF unsupported");
 	case DEREF:
 		if (x.get_sort().is_array()) {
 			return z3::select(x, 0);
 		}
-		throw AnalyzerException("toZ3Expr() DEREF of not arrays unsupported");
 	}
-	throw AnalyzerException("Unknown unary operator at toZ3Expr()");
+	PEDANTIC_THROW("Unknown unary operator at toZ3Expr()");
+	return state->getUndefined(type.sort);
 }
 
 void UnaryOperator::modifyState(State* state) const {
+	if (arg == nullptr) {
+		PEDANTIC_THROW("nullptr in operand of unary operator");
+		return;
+	}
 	auto x = arg->toZ3Expr(state);
 	switch (op) {
 	case PRE_INCREMENT:
@@ -133,7 +145,8 @@ void UnaryOperator::modifyState(State* state) const {
 	case DEREF:
 		return;
 	}
-	throw AnalyzerException("Unknown unary operator at modifyState()");
+	PEDANTIC_THROW("Unknown unary operator at modifyState()");
+	return;
 }
 
 void UnaryOperator::rememberMemoryAccesses(State* state, std::vector<MemoryAccess>& memoryAccesses) const {
@@ -155,11 +168,15 @@ BinaryOperator::BinaryOperator(BinaryOperation op, std::unique_ptr<Expression> l
 {}
 
 z3::expr BinaryOperator::toZ3Expr(State const* state) const {
-	auto l = lhs->toZ3Expr(state);
-	auto r = rhs->toZ3Expr(state);
+	if (lhs == nullptr || rhs == nullptr) {
+		PEDANTIC_THROW("BinaryOperator::toZ3Expr, nullptr arg");
+		return state->getUndefined(type.sort);
+	}
+	z3::expr l = lhs->toZ3Expr(state);
+	z3::expr r = rhs->toZ3Expr(state);
 	switch (op) {
 	case ASSIGN:
-		return state->z3_ctx->bool_val(true);
+		return r;// state->z3_ctx->bool_val(true);
 	case ADD:
 		return l + r;
 	case SUB:
@@ -187,18 +204,28 @@ z3::expr BinaryOperator::toZ3Expr(State const* state) const {
 	case LAND:
 		return l && r;
 	case ADD_ASSIGN:
+		return l + r;
 	case SUB_ASSIGN:
+		return l - r;
 	case MUL_ASSIGN:
+		return l * r;
 	case DIV_ASSIGN:
+		return l / r;
 	case REM_ASSIGN:
-		return state->z3_ctx->bool_val(true); // rhs?
+		return l - r * (l / r);
+		//return state->z3_ctx->bool_val(true); // rhs?
 	case COMMA:
-		return rhs->toZ3Expr(state);
+		return r;
 	}
-	throw AnalyzerException("Unknown binary operator at toZ3Expr()");
+	PEDANTIC_THROW("Unknown binary operator at toZ3Expr()");
+	return state->getUndefined(type.sort);
 }
 
 void BinaryOperator::modifyState(State* state) const {
+	if (lhs == nullptr || rhs == nullptr) {
+		PEDANTIC_THROW("nullptr in operands of binary operator");
+		return;
+	}
 	auto l = lhs->toZ3Expr(state);
 	auto r = rhs->toZ3Expr(state);
 	switch (op) {
@@ -246,7 +273,8 @@ void BinaryOperator::modifyState(State* state) const {
 	case XOR:
 		return;
 	}
-	throw AnalyzerException("Unknown binary operator at modifyState()");
+	PEDANTIC_THROW("Unknown binary operator at modifyState()");
+	return;
 }
 
 void BinaryOperator::rememberMemoryAccesses(State* state, std::vector<MemoryAccess>& memoryAccesses) const {
@@ -295,9 +323,7 @@ z3::expr ConditionalOperator::toZ3Expr(State const* state) const {
 	z3::expr _cond = cond->toZ3Expr(state);
 	z3::expr _true = then->toZ3Expr(state);
 	z3::expr _false = _else->toZ3Expr(state);
-	z3::expr tmp = state->getTmp(type.sort);
-	//state->localVariablesPredicates.emplace_back(
-	return	z3::ite(_cond, tmp == _true, tmp == _false);
-	//);
-	//return tmp;
+	//z3::expr tmp = state->getTmp(type.sort);
+	//return	z3::ite(_cond, tmp == _true, tmp == _false);
+	return	z3::ite(_cond, _true, _false);
 }
