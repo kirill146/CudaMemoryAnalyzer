@@ -621,6 +621,10 @@ bool ASTVisitor::VisitFunctionDecl(clang::FunctionDecl* f) {
 		Log(std::cout << "[Unparsed host function " << functionName << "]" << std::endl);
 		return true;
 	}
+	if (!f->isThisDeclarationADefinition()) {
+		Log(std::cout << "[Unparsed function declaration]" << std::endl);
+		return true;
+	}
 	//if (clang::isa<clang::FunctionTemplateDecl>(f)) {
 	if (f->isTemplated()) {
 		return true;
