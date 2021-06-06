@@ -1,5 +1,7 @@
+#include "pch.h"
 #include "CudaBuffer.h"
 #include <cuda.h>
+#include <cuda_runtime_api.h>
 #include <stdexcept>
 
 CudaBuffer::CudaBuffer(size_t size)

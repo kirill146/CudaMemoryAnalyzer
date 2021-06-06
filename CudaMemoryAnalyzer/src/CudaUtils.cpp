@@ -1,4 +1,4 @@
-#include <iostream>
+#include "pch.h"
 #include "AnalyzerException.h"
 #include <cuda.h>
 
