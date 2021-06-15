@@ -1,3 +1,15 @@
+// This file contains some necessarry parts of code from LLVM
+// It's a slightly modified version of clang/lib/Driver/ToolChains/MSVC.cpp
+// (these functions aren't declared in the header MSVC.h)
+
+//===-- MSVC.cpp - MSVC ToolChain Implementations -------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
 #include "pch.h"
 #include "DirectorySearch.h"
 
